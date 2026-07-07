@@ -10,7 +10,6 @@
     
     <title>Author Clock</title>
     <style>
-        /* 전체 화면 및 배경 설정 */
         body {
             margin: 0;
             padding: 0;
@@ -23,23 +22,22 @@
             height: 100dvh; 
             width: 100vw;
             overflow: hidden;
-            /* body 전체에 걸려있던 드래그 금지 해제 (개별 영역에만 적용) */
+            
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* 메인 컨테이너 (가로 모드 기준 완벽한 중앙 정렬) */
         .standby-container {
             display: flex;
             flex-direction: row;
-            align-items: center; /* 세로 기준 완벽한 중앙 정렬 */
             width: 100%;
             height: 100%;
-            /* 위아래 패딩을 동일하게 주고 좌우에만 아이폰 노치(안전영역) 고려 */
-            padding: 0 max(8vw, env(safe-area-inset-right)) 0 max(8vw, env(safe-area-inset-left));
+            padding: env(safe-area-inset-top, 5vw) env(safe-area-inset-right, 8vw) env(safe-area-inset-bottom, 5vw) env(safe-area-inset-left, 8vw);
             box-sizing: border-box;
             background-color: #000000;
         }
 
-        /* 좌측: 스와이프 영역 (시계/달력 공통) */
         .swipe-section {
             flex: 1;
             display: flex;
@@ -47,18 +45,12 @@
             align-items: center;
             position: relative;
             cursor: grab;
-            
-            /* 🔥 시계와 달력 영역만 드래그 및 터치 하이라이트 금지 🔥 */
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
         
         .swipe-section:active {
             cursor: grabbing;
         }
 
-        /* 공통 뷰 클래스 */
         .view-pane {
             display: flex;
             justify-content: center;
@@ -72,13 +64,16 @@
         .hidden { opacity: 0; transform: scale(0.95); pointer-events: none; }
         .active { opacity: 1; transform: scale(1); pointer-events: auto; }
 
-        /* 아날로그 시계 UI */
-.clock {
+        /* 💡 수정된 부분: 시계 UI */
+        .clock {
             width: 250px;
             height: 250px;
             max-width: 60vw;
             max-height: 60vw;
-            border: 4px solid #333;
+            /* 찌그러짐 방지 및 완벽한 원형 유지 */
+            aspect-ratio: 1 / 1; 
+            flex-shrink: 0; 
+            border: 4px solid #444; /* 테두리가 조금 더 잘 보이도록 수정 */
             border-radius: 50%;
             position: relative;
             background-color: #000;
@@ -107,7 +102,6 @@
         .minute-hand { width: 4px; height: 38%; background-color: #fff; margin-left: -2px; }
         .second-hand { width: 2px; height: 45%; background-color: #ff3b30; margin-left: -1px; z-index: 6; }
 
-        /* 달력 UI */
         .calendar-container { width: 100%; max-width: 300px; text-align: center; }
         .calendar-header { font-size: 1.5rem; font-weight: bold; margin-bottom: 15px; color: #ff3b30; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; font-size: 1rem; }
@@ -115,17 +109,12 @@
         .calendar-date { padding: 5px; border-radius: 50%; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center; margin: 0 auto; }
         .today { background-color: #ff3b30; color: #fff; font-weight: bold; }
 
-        /* 우측 문장 영역 */
         .quote-section {
             flex: 1.2;
             display: flex;
             flex-direction: column;
             justify-content: center;
             padding-left: 6vw;
-
-            /* 🔥 글귀 영역은 드래그 및 복사 허용 🔥 */
-            -webkit-user-select: text;
-            user-select: text;
         }
 
         .quote-text {
@@ -139,13 +128,8 @@
         .time-highlight { color: #ff3b30; font-weight: bold; }
         .quote-author { font-size: 1rem; color: #8e8e93; text-align: right; font-style: italic; }
 
-        /* 세로 모드(Portrait) 대응 */
         @media (orientation: portrait) {
-            .standby-container { 
-                flex-direction: column; 
-                /* 세로 모드에서는 노치와 하단 홈 바를 피해 여백 설정 */
-                padding: max(15vw, env(safe-area-inset-top)) 8vw max(10vw, env(safe-area-inset-bottom)) 8vw; 
-            }
+            .standby-container { flex-direction: column; padding: env(safe-area-inset-top, 15vw) 8vw env(safe-area-inset-bottom, 5vw) 8vw; }
             .swipe-section { flex: 1; align-items: flex-end; padding-bottom: 10vw; }
             .quote-section { flex: 1; padding-left: 0; padding-top: 5vw; justify-content: flex-start; }
             .quote-text { font-size: 1.3rem; }
