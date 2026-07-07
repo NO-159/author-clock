@@ -2,8 +2,13 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Author Clock - Swipe Calendar & Varied Quotes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="문학시계">
+    
+    <title>Author Clock</title>
     <style>
         /* 전체 화면 및 배경 설정 */
         body {
@@ -18,15 +23,18 @@
             height: 100dvh; 
             width: 100vw;
             overflow: hidden;
+            /* body 전체에 걸려있던 드래그 금지 해제 (개별 영역에만 적용) */
         }
 
-        /* 메인 컨테이너 */
+        /* 메인 컨테이너 (가로 모드 기준 완벽한 중앙 정렬) */
         .standby-container {
             display: flex;
             flex-direction: row;
+            align-items: center; /* 세로 기준 완벽한 중앙 정렬 */
             width: 100%;
             height: 100%;
-            padding: 5vw 8vw;
+            /* 위아래 패딩을 동일하게 주고 좌우에만 아이폰 노치(안전영역) 고려 */
+            padding: 0 max(8vw, env(safe-area-inset-right)) 0 max(8vw, env(safe-area-inset-left));
             box-sizing: border-box;
             background-color: #000000;
         }
@@ -39,6 +47,11 @@
             align-items: center;
             position: relative;
             cursor: grab;
+            
+            /* 🔥 시계와 달력 영역만 드래그 및 터치 하이라이트 금지 🔥 */
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .swipe-section:active {
@@ -56,19 +69,10 @@
             transition: opacity 0.4s ease, transform 0.4s ease;
         }
 
-        .hidden {
-            opacity: 0;
-            transform: scale(0.95);
-            pointer-events: none;
-        }
+        .hidden { opacity: 0; transform: scale(0.95); pointer-events: none; }
+        .active { opacity: 1; transform: scale(1); pointer-events: auto; }
 
-        .active {
-            opacity: 1;
-            transform: scale(1);
-            pointer-events: auto;
-        }
-
-        /* 1. 아날로그 시계 UI */
+        /* 아날로그 시계 UI */
         .clock {
             width: 250px;
             height: 250px;
@@ -82,10 +86,8 @@
 
         .clock .center-dot {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 12px;
-            height: 12px;
+            top: 50%; left: 50%;
+            width: 12px; height: 12px;
             background-color: #ff3b30;
             border-radius: 50%;
             transform: translate(-50%, -50%);
@@ -94,8 +96,7 @@
 
         .hand {
             position: absolute;
-            bottom: 50%;
-            left: 50%;
+            bottom: 50%; left: 50%;
             transform-origin: bottom;
             border-radius: 10px;
             z-index: 5;
@@ -106,49 +107,13 @@
         .minute-hand { width: 4px; height: 38%; background-color: #fff; margin-left: -2px; }
         .second-hand { width: 2px; height: 45%; background-color: #ff3b30; margin-left: -1px; z-index: 6; }
 
-        /* 2. 달력 UI */
-        .calendar-container {
-            width: 100%;
-            max-width: 300px;
-            text-align: center;
-        }
-
-        .calendar-header {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #ff3b30;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-            font-size: 1rem;
-        }
-
-        .calendar-day-name {
-            color: #8e8e93;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        .calendar-date {
-            padding: 5px;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto;
-        }
-
-        .today {
-            background-color: #ff3b30;
-            color: #fff;
-            font-weight: bold;
-        }
+        /* 달력 UI */
+        .calendar-container { width: 100%; max-width: 300px; text-align: center; }
+        .calendar-header { font-size: 1.5rem; font-weight: bold; margin-bottom: 15px; color: #ff3b30; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; font-size: 1rem; }
+        .calendar-day-name { color: #8e8e93; font-size: 0.9rem; margin-bottom: 5px; }
+        .calendar-date { padding: 5px; border-radius: 50%; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center; margin: 0 auto; }
+        .today { background-color: #ff3b30; color: #fff; font-weight: bold; }
 
         /* 우측 문장 영역 */
         .quote-section {
@@ -157,6 +122,10 @@
             flex-direction: column;
             justify-content: center;
             padding-left: 6vw;
+
+            /* 🔥 글귀 영역은 드래그 및 복사 허용 🔥 */
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         .quote-text {
@@ -167,21 +136,16 @@
             margin-bottom: 20px;
         }
 
-        .time-highlight {
-            color: #ff3b30;
-            font-weight: bold;
-        }
-
-        .quote-author {
-            font-size: 1rem;
-            color: #8e8e93;
-            text-align: right;
-            font-style: italic;
-        }
+        .time-highlight { color: #ff3b30; font-weight: bold; }
+        .quote-author { font-size: 1rem; color: #8e8e93; text-align: right; font-style: italic; }
 
         /* 세로 모드(Portrait) 대응 */
         @media (orientation: portrait) {
-            .standby-container { flex-direction: column; padding: 15vw 8vw; }
+            .standby-container { 
+                flex-direction: column; 
+                /* 세로 모드에서는 노치와 하단 홈 바를 피해 여백 설정 */
+                padding: max(15vw, env(safe-area-inset-top)) 8vw max(10vw, env(safe-area-inset-bottom)) 8vw; 
+            }
             .swipe-section { flex: 1; align-items: flex-end; padding-bottom: 10vw; }
             .quote-section { flex: 1; padding-left: 0; padding-top: 5vw; justify-content: flex-start; }
             .quote-text { font-size: 1.3rem; }
@@ -216,7 +180,6 @@
     </div>
 
     <script>
-        // 고정된 문학 데이터베이스 (샘플)
         const quotesDB = {
             "12:00": { text: "<span class='time-highlight'>정오(12시)</span>, 나는 자릿조끼를 입은 채 어물어물 내 방을 나섰다. 그리고 옥상으로 올라갔다.", author: "- 이상, 『날개』 중" },
             "23:00": { text: "밤 <span class='time-highlight'>열한 시</span>가 되었다. 사위는 고요하고, 멀리서 개 짖는 소리만이 간간이 들려올 뿐이었다.", author: "- 김유정, 단편 소설풍" }
@@ -257,7 +220,6 @@
                 quoteText.innerHTML = quotesDB[timeKey].text;
                 quoteAuthor.innerHTML = quotesDB[timeKey].author;
             } else {
-                // 데이터가 없을 때 사용할 다양한 문장 템플릿
                 const ampm = h >= 12 ? '오후' : '오전';
                 const displayH = h % 12 || 12;
                 
@@ -272,8 +234,6 @@
                     { text: `어디선가 나직한 소리가 울려 퍼진 것 같았다. <span class='time-highlight'>${displayH}시 ${m}분</span>을 알리는 신호일지도 몰랐다.`, author: "- 낡은 서재에서" }
                 ];
 
-                // 현재 시간(분)을 기준으로 항상 같은 템플릿이 선택되도록 수학적 계산
-                // 템플릿이 8개이므로, 매 분마다 8개의 문장이 로테이션 됨
                 const index = (h * 60 + m) % fallbackTemplates.length;
                 const selectedFallback = fallbackTemplates[index];
 
@@ -285,7 +245,6 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // 달력 렌더링
         function renderCalendar() {
             const now = new Date();
             const year = now.getFullYear();
@@ -310,7 +269,6 @@
         }
         renderCalendar();
 
-        // 스와이프 기능
         const swipeSection = document.getElementById('swipe-section');
         const viewClock = document.getElementById('view-clock');
         const viewCalendar = document.getElementById('view-calendar');
